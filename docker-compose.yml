@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  jira:
+    image: atlassian/jira-software:latest
+    container_name: jira
+    build: 
+     context: .
+     dockerfile: Dockerfile
+    ports:
+      - "8005:8080"
+    volumes:
+      - jiraVolume:/var/atlassian/application-data/jira
+    environment:
+      - ATL_JDBC_URL=jdbc:mysql://db:3306/jiradb?useSSL=false&characterEncoding=utf8&useUnicode=true&serverTimezone=UTC
+      - ATL_JDBC_USER=jirauser
+      - ATL_JDBC_PASSWORD=jirapassword
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - jira_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  db:
+    image: mysql:latest
+    container_name: jira_mysql
+    ports:
+      - "3310:3306"
+    environment:
+      MYSQL_DATABASE: jiradb
+      MYSQL_USER: jirauser
+      MYSQL_PASSWORD: jiradb
+      MYSQL_ROOT_PASSWORD: jiradb
+    volumes:
+      - mysqlVolume:/var/lib/mysql
+    networks:
+      - jira_network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u jirauser -pjirapassword || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+networks:
+  jira_network:
+
+volumes:
+  jiraVolume:
+  mysqlVolume:

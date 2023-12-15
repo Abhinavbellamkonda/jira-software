@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  jira:
+    image: ghcr.io/eugenmayer/jira
+    ports:
+      - '80:8080'
+      - '5005:5005' # the debug port
+    environment:
+      - 'JIRA_DATABASE_URL=postgresql://jiradb@db/jiradb'
+      - 'JIRA_DB_PASSWORD=jellyfish'
+      # need for the wait-for-db statement
+      - 'JIRA_DB_HOST=db'
+      - 'JIRA_DB_PORT=5432'
+      # debug ports
+      - 'JPDA_ADDRESS=5005'
+      - 'JPDA_TRANSPORT=dt_socket'
+    volumes:
+      - './start-jira.sh:/opt/jira/bin/start-jira.sh'
+  db:
+    image: postgres:10
+    environment:
+      - 'POSTGRES_USER=jiradb'
+      - 'POSTGRES_PASSWORD=jellyfish'
+      - 'POSTGRES_DB=jiradb'

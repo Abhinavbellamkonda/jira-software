@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  jira:
+    image: ghcr.io/eugenmayer/jira
+    container_name: jira
+    ports:
+      - '80:8080'
+    environment:
+      - 'JIRA_DATABASE_URL=postgresql://jiradb@db/jiradb'
+      - 'JIRA_DB_PASSWORD=jellyfish'
+      # need for the wait-for-db statement
+      - 'JIRA_DB_HOST=db'
+      - 'JIRA_DB_PORT=5432'
+  db:
+    image: postgres:10
+    environment:
+      - 'POSTGRES_USER=jiradb'
+      - 'POSTGRES_PASSWORD=jellyfish'
+      - 'POSTGRES_DB=jiradb'
